@@ -74,8 +74,9 @@ fall_speed = 210
 TORPEDO_COOLDOWN = 1.0
 RAPID_COOLDOWN = 0.5
 
-# Collision sizes. These used to be scattered through the code at three to ten
-# times the size of the thing being drawn, which is why hazards felt unfair.
+# Collision sizes, all measured off the art, so a near miss on screen is a
+# near miss in the maths. They live together here rather than at the call
+# sites, because they only make sense next to each other.
 HULL_END_R = 24          # the round nose and tail of a hull
 TORPEDO_R = 12
 BOMB_R = 9
@@ -858,10 +859,10 @@ def hits_sub(sub, x, y, radius):
 def seg_dist(ax, ay, bx, by, px, py):
     """Shortest distance from a point to the segment (ax,ay)-(bx,by).
 
-    Collisions are checked against the path a torpedo covered this frame
-    rather than the point it ended on. A torpedo moves 50 units in a frame
-    at 20fps, so a 24 unit radius was being stepped clean over and the
-    interception never happened on a slow machine.
+    Torpedoes are checked against the path they covered this frame, not the
+    point they ended on. One moves 50 units in a frame at 20fps and the radii
+    involved are half that, so a test on the end point alone steps clean over
+    whatever it should have hit.
     """
     dx, dy = bx - ax, by - ay
     if dx == 0.0 and dy == 0.0:
@@ -980,7 +981,7 @@ def update_bubbles(current_time, dt):
         b.rad += speed_rad * 60 * dt
         if b.y > SURFACE_Y:
             b.flag = False
-    # the original never removed a bubble, so the list grew for the whole game
+    # a bubble that has reached the surface is done with
     bubbles[:] = [b for b in bubbles if b.flag]
 
 
@@ -1082,6 +1083,29 @@ class submarine:
                 part[key][1] += dy
         self.circle1 = [self.circle1[0] + dx, self.circle1[1] + dy]
         self.circle2 = [self.circle2[0] + dx, self.circle2[1] + dy]
+
+    def rotate_by(self, radians):
+        """Turn the whole submarine about its own centre.
+
+        Only the sinking animation uses this. Every hit box in the game is
+        axis aligned, so a tilted hull would not be tested honestly - but by
+        the time this runs the submarine is out of the round and nothing is
+        testing it. The pivot is the average of the four hull corners rather
+        than center(), because that average is the one point a rotation
+        leaves where it is.
+        """
+        corners = list(self.main_body.values())
+        px = sum(p[0] for p in corners) / len(corners)
+        py = sum(p[1] for p in corners) / len(corners)
+        c, s = cos(radians), sin(radians)
+        for part in self.parts():
+            for key in part:
+                x, y = part[key][0] - px, part[key][1] - py
+                part[key][0] = px + x * c - y * s
+                part[key][1] = py + x * s + y * c
+        for circle in (self.circle1, self.circle2):
+            x, y = circle[0] - px, circle[1] - py
+            circle[0], circle[1] = px + x * c - y * s, py + x * s + y * c
 
     def center(self):
         b = self.main_body
@@ -1279,8 +1303,8 @@ def apply_physics(dt):
 
         min_x, min_y, max_x, max_y = sub.extent()
         # keep the whole hull on screen and under the water. Pushing into a wall
-        # stops the submarine rather than bouncing it, which used to make it
-        # jitter for as long as the key was held.
+        # stops the submarine dead rather than bouncing it, so holding the key
+        # against a wall is steady instead of a jitter.
         if min_x < WORLD_L + 10:
             sub.move_by(WORLD_L + 10 - min_x, 0)
             sub.vx = max(0.0, sub.vx)
@@ -1301,9 +1325,15 @@ def apply_physics(dt):
             sub.vy = max(0.0, sub.vy)
 
 
+SINK_TILT_RATE = 0.22    # radians a second, while a hull is on its way down
+
+
 def auto_fall(sub, dt):
     if sub.main_body['mp3'][1] > SEABED_Y + 10:
         sub.move_by(0, -150 * dt)
+        # a hull going down goes down nose first, and the tilt is what makes
+        # it read as sinking rather than as being lowered on a rope
+        sub.rotate_by(-SINK_TILT_RATE * dt * (1 if sub.num == 1 else -1))
         if random.random() < 0.30:
             cx, cy = sub.center()
             particles.append(Particle(
@@ -1448,10 +1478,9 @@ def reset_bombs():
     """
     Start a new pass of depth charges.
 
-    The sideways speed used to be 1/tan(angle), which runs from nothing to
-    billions across the sixty degrees it was picked from: at some angles a
-    charge fell dead straight, at others it crossed the map in a single frame
-    and was gone before it could be seen. It is a plain horizontal speed now.
+    The sideways speed is a plain horizontal one. Deriving it from the angle
+    as 1/tan runs from nothing to billions across sixty degrees, and a hazard
+    you are meant to read cannot have a speed like that.
     """
     global bombs, bombN, theta, bomb_vx, bomb_delay
     boaty = 233
@@ -1581,7 +1610,7 @@ def apply_pickup(sub, kind):
         if gained:
             announce(f"{sub.team['name']} +{gained} HEALTH")
         else:
-            # picking it up on full health used to be worth nothing at all
+            # nothing to heal, so it is worth a little cover instead
             sub.shield = max(sub.shield, 3.0)
             announce(f"{sub.team['name']} PATCHED UP")
     elif kind == KIND_SHIELD:

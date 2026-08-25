@@ -11,6 +11,7 @@ import os
 import sys
 import random
 import time
+import math
 
 # The OpenGL package ships in the project folder, one level up from this one.
 # Python only puts the script's own directory on the path, so without this the
@@ -318,6 +319,46 @@ g['apply_physics'](0.001)
 straight = abs(g['sub11'].vx)
 check("diagonal travel is not faster than straight travel",
       diagonal <= straight * 1.02, (straight, diagonal))
+# ---------------------------------------------------------------- sinking
+
+g['start_round']()
+sub = g['sub22']
+def hull_span():
+    b = sub.main_body
+    return (math.hypot(b['mp2'][0] - b['mp1'][0], b['mp2'][1] - b['mp1'][1]),
+            math.hypot(b['mp4'][0] - b['mp1'][0], b['mp4'][1] - b['mp1'][1]))
+
+def tilt_degrees():
+    b = sub.main_body
+    return abs(math.degrees(math.atan2(b['mp2'][1] - b['mp1'][1],
+                                       b['mp2'][0] - b['mp1'][0])))
+
+before = hull_span()
+sub.rotate_by(0.5)
+check("turning a hull does not stretch it",
+      all(abs(a - b) < 1e-6 for a, b in zip(before, hull_span())), (before, hull_span()))
+sub.rotate_by(-0.5)
+check("and turning it back leaves it level", tilt_degrees() < 1e-6, tilt_degrees())
+
+g['start_round']()
+sub = g['sub22']
+cx, cy = sub.center()
+sub.move_by(0 - cx, 150 - cy)
+sub.flash = 0.0
+for _ in range(9):
+    g['damage'](sub, 1)
+    sub.flash = 0.0
+check("losing every life starts the sinking animation",
+      g['state'] == g['STATE_SINKING'], g['state'])
+for _ in range(400):
+    a(); d()
+    if g['state'] != g['STATE_SINKING']:
+        break
+check("a sinking hull tilts on the way down", tilt_degrees() > 3, tilt_degrees())
+wait_out_banner()
+g['keyboardListener'](b'\r', 0, 0); frames(3)
+check("and the next round puts it back level", tilt_degrees() < 1e-6, tilt_degrees())
+
 # ---------------------------------------------------------------- hit boxes
 
 g['reset_game']()

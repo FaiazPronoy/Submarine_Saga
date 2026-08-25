@@ -199,6 +199,14 @@ same frame went straight through and the shield read as having done nothing.
 rapid fire six, so a fresh shield overflowed its bar and rapid fire started
 already a seventh spent. The three durations are named constants the HUD reads.
 
+**A hull went down flat**, translated straight to the seabed like something
+being lowered on a rope. It turns as it falls now - a plain 2D rotation of
+every point about the average of the four hull corners, which is the one point
+a rotation leaves where it is. About thirty degrees over the whole way down.
+Nothing else in the game rotates: every hit box is axis aligned, and a tilted
+hull would not be tested honestly, but by the time this runs the submarine is
+out of the round and nothing is testing it.
+
 **The result banner could not be read.** Whoever just lost is usually still
 leaning on a key, and the next round started before either player saw who won.
 A result screen ignores input for its first 0.7 seconds and the held keys are
@@ -246,7 +254,7 @@ folder on the import path rather than the project root, and the bundled
 `OpenGL` copy would not be found - the test puts the project root on the path
 itself before importing anything.
 
-**80 checks, all passing.** They include one per bug listed above, so none of
+**85 checks, all passing.** They include one per bug listed above, so none of
 them can come back quietly: both players' torpedoes are checked for direction,
 the collision box is checked against the hull it belongs to, four hits in one
 frame are checked to cost one life, and three hundred depth charge passes are
