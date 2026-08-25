@@ -34,10 +34,16 @@ pip install numpy
 | Move | `W` `A` `S` `D` | arrow keys |
 | Fire | `C` | `P` |
 
-**A torpedo goes wherever the submarine is moving.** The dotted line out of the
-nose is where the next one will go. Standing still fires level. So lining up a
-shot and getting out of the way are the same set of keys, and they pull against
-each other - that is the game.
+**A torpedo goes wherever the submarine is moving.** Standing still fires
+level. So lining up a shot and getting out of the way are the same set of keys,
+and they pull against each other - that is the game.
+
+The dotted line out of the nose is the **sight**, and it is not decoration: it
+walks the exact path the next torpedo would take and stops at the first thing
+that path runs into - the wreck, a mine, the seabed, the edge of the map. When
+what it stops on is the other submarine, it turns red and puts a ring on the
+target. A torpedo flies straight at a constant speed, so the walk is an exact
+prediction rather than a guess.
 
 `Enter` start / next round · `I` pause · `R` restart the match ·
 `N` day and night · `Esc` back to the menu.
@@ -60,9 +66,13 @@ Things that will hurt you:
 
 Nothing here is only a hazard. **A torpedo destroys a mine, kills a shark, and
 shoots down another torpedo**, so the things in the water are something to use
-rather than only something to survive. The **wreck on the seabed is solid** -
-torpedoes and depth charges break against it, so it is real cover, and it is
-the one fixed thing on the map worth fighting over.
+rather than only something to survive.
+
+The **wreck on the seabed is solid.** Torpedoes and depth charges break against
+it, so it is real cover, and submarines stand on its deck rather than passing
+through it - the middle of the map has a floor seventy units higher than the
+sand either side of it. Standing on the wreck is a better firing position and a
+worse hiding place, which is the only reason the map has terrain at all.
 
 If you are down to your last life you move faster, reload faster, and pickups
 start falling on your side.
@@ -78,9 +88,12 @@ Things worth swimming for - they fall from the surface and drift as they go:
 
 ## What changed in this version
 
-The first version worked, but it ran at about **twelve frames a second** and
-both submarines were the same colour, so you could not tell which one was
-yours.
+The first version worked, but it was too slow to play and both submarines were
+the same colour, so you could not tell which one was yours.
+
+Timing `display()` on my laptop, best of six runs of thirty frames each, on the
+same machine in the same sitting: the first version takes **245 ms a frame**,
+this one takes **32 ms**. That is 4 frames a second against 31.
 
 **Speed.** `draw_points` opened and closed a `glBegin`/`glEnd` block for every
 single point, and the whole screen is points. Points are now collected into
@@ -123,9 +136,10 @@ could be seen. It is a plain horizontal speed now.
 axis separately. Travelling at an angle was strictly the best way to move.
 
 **Keys sticking down.** Alt tab while holding a key and the key up event went to
-the other window, so the submarine accelerated into the wall for ever. There is
-a focus handler now, and `glutIgnoreKeyRepeat` stops the auto repeat making the
-held key set flicker.
+the other window, so the submarine accelerated into the wall for ever. The held
+keys are dropped when the pointer leaves the window, and `glutIgnoreKeyRepeat`
+stops the auto repeat making the held key set flicker. GLUT has no focus
+callback, so leaving the window is the closest signal there is.
 
 **Bookkeeping.** Bubbles, sharks, spent torpedoes and used pickups were never
 removed from their lists, so a long game got slower and slower.
@@ -135,8 +149,64 @@ is why the submarines looked like wireframes. There is a scanline fill now, so
 a hull is a hull, and the function is called `draw_outline` because that is
 what it does.
 
-**New:** heading based aiming with an aim line, torpedoes that destroy mines,
-sharks and each other, the wreck as cover, warning markers on the depth charges
+**Circles with eight notches in them.** The midpoint circle loop ran
+`while x < r`, which stops one pixel before the octant reaches the 45 degree
+diagonal, and the eight mirrored copies each end one pixel short of their
+neighbour. Measuring the largest gap between neighbouring pixels across radii
+3 to 95: worst case **2.83 pixels before, 1.41 after**, 45 radii improved and
+none made worse. The condition is `while x <= r`.
+
+**Torpedoes passing through each other.** Collisions were tested where a
+torpedo *ended* the frame, not where it *travelled*. A torpedo covers 50 units
+in a frame and the interception radius is 26, so at a low frame rate two
+torpedoes swapped places without ever being close enough to notice. Firing 60
+head-on pairs: **27 of 60 passed straight through at 20 fps, 14 of 60 at 30**.
+The test is now the distance from the other torpedo to the *segment* the
+torpedo covered, and it is 0 of 60 at every frame rate I tried.
+
+**Caps lock broke half the keyboard.** The movement keys were lowered before
+being compared and the action keys were not, so with caps lock on both players
+could swim and neither could shoot, pause or restart.
+
+**A third of each submarine could not be hit.** `get_bounding_box` was built
+from the hull and the keel only, so the conning tower and the periscope - 35 of
+the 100 units you can see - were outside every collision shape. The propeller
+is still left out, deliberately: it is a thin spinning blade and clipping it
+should not cost a life.
+
+**The shark bit with its middle.** It was one circle of radius 26 at its centre
+while the drawing runs 46 units ahead of that centre, so the teeth reached
+about 20 units past anything that could register. Nose and body get a circle
+each now.
+
+**The wreck was a hiding place with no way in.** It was drawn *after* the
+submarines, so it painted over them; and its box covered the whole band the
+seabed clamp puts a hull in, so a player parked on the sand inside it could not
+be reached by a torpedo or a depth charge. The box is now the drawn hull only,
+the wreck has its own slot in the draw order - behind the submarines, in front
+of the weeds - and it is solid ground rather than a room.
+
+**Pausing banked up the game.** Reload and spawn deadlines are wall clock
+stamps, and the wall clock does not stop when the game does. A thirty second
+pause left every timer overdue, so unpausing dropped a mine, a shark and both
+players' torpedoes into the same frame.
+
+**A shield cost a life anyway.** Breaking a shield returned before granting the
+moment of invulnerability an ordinary hit grants, so a second hazard in the
+same frame went straight through and the shield read as having done nothing.
+
+**Power up bars all divided by seven** while a shield lasts nine seconds and
+rapid fire six, so a fresh shield overflowed its bar and rapid fire started
+already a seventh spent. The three durations are named constants the HUD reads.
+
+**The result banner could not be read.** Whoever just lost is usually still
+leaning on a key, and the next round started before either player saw who won.
+A result screen ignores input for its first 0.7 seconds and the held keys are
+released when a round ends.
+
+**New:** heading based aiming with a sight that traces the real path of the
+shot, torpedoes that destroy mines, sharks and each other, the wreck as cover
+and as ground you can stand on, warning markers on the depth charges
 and the shark, a last stand for whoever is behind, the round and match system,
 the title screen, four kinds of pickup instead of one, mines that arm and
 expire, explosion particles, fish, seaweed, light shafts, a depth gradient, a
@@ -176,7 +246,7 @@ folder on the import path rather than the project root, and the bundled
 `OpenGL` copy would not be found - the test puts the project root on the path
 itself before importing anything.
 
-**59 checks, all passing.** They include one per bug listed above, so none of
+**80 checks, all passing.** They include one per bug listed above, so none of
 them can come back quietly: both players' torpedoes are checked for direction,
 the collision box is checked against the hull it belongs to, four hits in one
 frame are checked to cost one life, and three hundred depth charge passes are
