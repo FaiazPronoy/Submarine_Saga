@@ -91,9 +91,12 @@ Things worth swimming for — they fall from the surface and drift as they go:
 The first version worked, but it was too slow to play and both submarines were
 the same colour, so you could not tell which one was yours.
 
-Timing `display()` on my laptop, best of six runs of thirty frames each, on the
-same machine in the same sitting: the first version takes **245 ms a frame**,
-this one takes **32 ms**. That is 4 frames a second against 31.
+Timing `display()` on my laptop, best of six runs of thirty frames each,
+alternating between the two builds so they meet the same conditions: the first
+version lands between 155 and 261 ms a frame, this one between 28 and 41. The
+absolute numbers move around with whatever else the machine is doing, but the
+gap does not — **it is about six times faster**, and it is the difference
+between a slideshow and something you can play.
 
 **Speed.** `draw_points` opened and closed a `glBegin`/`glEnd` block for every
 single point, and the whole screen is points. Points are now collected into
