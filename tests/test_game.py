@@ -10,6 +10,7 @@ Run from anywhere:   python tests/test_game.py
 import os
 import sys
 import random
+import time
 
 # The OpenGL package ships in the project folder, one level up from this one.
 # Python only puts the script's own directory on the path, so without this the
@@ -35,6 +36,11 @@ def check(name, cond, extra=''):
 def frames(n=6):
     for _ in range(n):
         a(); d()
+
+def wait_out_banner():
+    """Sit through the grace period a result screen holds input for."""
+    g['round_over_at'] -= g['BANNER_GRACE'] + 0.1
+
 
 def hit(sub, times=1):
     """Damage with a gap, because a hit now grants a moment of invulnerability."""
@@ -115,6 +121,11 @@ for _ in range(400):
 check("sinking ends the round", g['state'] == g['STATE_ROUND_OVER'], g['state'])
 check("the round is awarded to the survivor", g['score'][1] == 1, g['score'])
 
+# a key that was already down when the round ended must not skip the banner
+g['keyboardListener'](b'\r', 0, 0); frames(3)
+check("the result banner cannot be skipped instantly",
+      g['state'] == g['STATE_ROUND_OVER'], g['state'])
+wait_out_banner()
 g['keyboardListener'](b'\r', 0, 0); frames(3)
 check("enter starts the next round", g['state'] == g['STATE_PLAY'] and g['round_no'] == 2,
       (g['state'], g['round_no']))
@@ -129,6 +140,7 @@ for _ in range(400):
 check("two round wins takes the match", g['state'] == g['STATE_MATCH_OVER'], g['state'])
 check("the match winner is recorded", g['match_winner'] == 1, g['match_winner'])
 
+wait_out_banner()
 g['keyboardListener'](b'\r', 0, 0); frames(3)
 check("enter after the match starts a fresh one",
       g['state'] == g['STATE_PLAY'] and g['round_no'] == 1 and g['score'] == {1:0, 2:0},
@@ -144,10 +156,10 @@ g['keyboardListener'](b'i', 0, 0)
 check("i unpauses", not g['paused'])
 
 # day / night
-g['keyboardListener'](b'y', 0, 0); frames(2)
-check("y switches to night", g['night'])
-g['keyboardListener'](b'u', 0, 0); frames(2)
-check("u switches back to day", not g['night'])
+g['keyboardListener'](b'n', 0, 0); frames(2)
+check("n switches to night", g['night'])
+g['keyboardListener'](b'N', 0, 0); frames(2)
+check("N switches back to day", not g['night'])
 
 # pickups
 g['reset_game']()
@@ -296,8 +308,7 @@ g['keyboardListener'](b'\x1b', 0, 0); frames(2)
 g['keyboardListener'](b'r', 0, 0); frames(3)
 check("r on the menu does nothing", g['state'] == g['STATE_MENU'], g['state'])
 
-# diagonal travel used to be 41 percent faster, because the speed was clamped
-# one axis at a time
+# the speed cap is on the whole velocity, not one axis at a time
 g['keyboardListener'](b'\r', 0, 0); frames(2)
 g['sub11'].vx, g['sub11'].vy = 9000.0, 9000.0
 g['apply_physics'](0.001)
@@ -307,6 +318,127 @@ g['apply_physics'](0.001)
 straight = abs(g['sub11'].vx)
 check("diagonal travel is not faster than straight travel",
       diagonal <= straight * 1.02, (straight, diagonal))
+# ---------------------------------------------------------------- hit boxes
+
+g['reset_game']()
+sub = g['sub11']
+box = sub.get_bounding_box()
+drawn_top = max(p[1] for p in sub.air_duct.values())
+check("the periscope is inside the hit box", box.y + box.height >= drawn_top,
+      (box.y + box.height, drawn_top))
+drawn_bottom = min(p[1] for p in sub.lower_body.values())
+check("the keel is inside the hit box", box.y <= drawn_bottom, (box.y, drawn_bottom))
+
+# the shark bites with its nose, which is 46 units ahead of its centre
+def shark_at(gap):
+    g['start_round']()
+    s = g['sub11']
+    cx, cy = s.center()
+    g['sharks'].clear()
+    sh = g['Shark'](cx - gap, cy, 1)
+    sh.warn = 0.0
+    g['sharks'].append(sh)
+    s.flash = 0.0
+    g['update_sharks'](0.001, time.time())
+    return s.life < s.max_life
+
+check("the shark's snout bites", shark_at(100))
+check("the shark still misses from clear water", not shark_at(190))
+
+# ---------------------------------------------------------------- shields
+
+g['start_round']()
+sub = g['sub11']
+sub.shield = g['SHIELD_TIME']
+sub.flash = 0.0
+g['damage'](sub, 1)
+check("a shield absorbs the hit", sub.life == sub.max_life and sub.shield == 0)
+g['damage'](sub, 1)
+check("breaking a shield still grants the usual moment of cover",
+      sub.life == sub.max_life, sub.life)
+
+# a health crate on full health is worth something
+g['start_round']()
+sub = g['sub11']
+sub.shield = 0.0
+g['apply_pickup'](sub, g['KIND_HEALTH'])
+check("a health crate on full health is not wasted", sub.shield > 0, sub.shield)
+
+# the HUD bar and the effect have to agree, or a fresh power up reads as
+# already half spent
+for name, dur in (('SHIELD_TIME', 9.0), ('RAPID_TIME', 6.0), ('BOOST_TIME', 7.0)):
+    check(f"{name} is a named duration the HUD can divide by", g[name] == dur, g[name])
+
+# ---------------------------------------------------------------- the wreck
+
+def park(x):
+    g['start_round']()
+    s = g['sub11']
+    cx, cy = s.center()
+    s.move_by(x - cx, 0)
+    for _ in range(120):
+        s.vy = -400.0
+        g['apply_physics'](1 / 30.0)
+    return s
+
+WRECK = g['WRECK']
+on_wreck = park(0)
+check("a submarine stands on the wreck, not inside it",
+      on_wreck.extent()[1] >= WRECK[3] - 1, on_wreck.extent()[1])
+check("and nothing about it is hidden from a torpedo",
+      not g['wreck_blocks'](*on_wreck.center()))
+on_wreck.flash = 0.0
+before = on_wreck.life
+g['damage'](on_wreck, 1)
+check("a submarine on the wreck can still be hurt", on_wreck.life < before)
+
+off_wreck = park(-500)
+check("away from the wreck the seabed is still the floor",
+      off_wreck.extent()[1] < WRECK[3] - 40, off_wreck.extent()[1])
+
+# ---------------------------------------------------------------- the sight
+
+def line_up(y1, y2, x1=-300, x2=200):
+    g['start_round']()
+    for s, x, y in ((g['sub11'], x1, y1), (g['sub22'], x2, y2)):
+        cx, cy = s.center()
+        s.move_by(x - cx, y - cy)
+    g['sub11'].vx = g['sub11'].vy = g['sub22'].vx = g['sub22'].vy = 0.0
+
+line_up(0, 0)
+dashes, end, locked = g['aim_trace'](g['sub11'])
+check("the sight locks on a clear shot", locked)
+
+line_up(-241, -241, -400, 400)
+dashes, end, locked = g['aim_trace'](g['sub11'])
+check("the wreck breaks the lock", not locked)
+check("and the sight stops at the wreck", end[0] <= WRECK[0] + g['AIM_STEP'], end[0])
+
+line_up(0, 0)
+m = g['Mine']()
+m.x, m.y = -100.0, g['sub11'].center()[1]
+m.active = True
+g['mines'].clear(); g['mines'].append(m)
+dashes, end, locked = g['aim_trace'](g['sub11'])
+check("a mine on the line breaks the lock too", not locked)
+
+line_up(150, -150)
+dashes, end, locked = g['aim_trace'](g['sub11'])
+check("aimed at open water the sight just runs out", not locked and len(dashes) > 20)
+
+# ---------------------------------------------------------------- pausing
+
+g['start_round']()
+g['paused'] = True
+before = time.time() - g['last_mine_time']
+t0 = time.time()
+while time.time() - t0 < 0.6:
+    a()
+after = time.time() - g['last_mine_time']
+check("a pause does not bank up spawn cooldowns", abs(after - before) < 0.15,
+      (before, after))
+g['paused'] = False
+
 
 print("\n" + "="*58)
 print(f"  {len(PASS)} passed, {len(FAIL)} failed")

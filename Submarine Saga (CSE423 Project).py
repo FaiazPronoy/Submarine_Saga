@@ -55,7 +55,6 @@ start_time1 = time.time()
 start_time2 = time.time() + 3
 tor_time1 = time.time() - 2
 tor_time2 = time.time() - 2
-last_update = time.time()
 last_frame = time.time()
 last_spawn_time = time.time()
 last_spawn_time_shark = time.time()
@@ -81,9 +80,15 @@ HULL_END_R = 24          # the round nose and tail of a hull
 TORPEDO_R = 12
 BOMB_R = 9
 MINE_R = 18
-SHARK_R = 26
+SHARK_R = 26            # the shark is drawn 90 long, so one circle at the
+SHARK_NOSE = 34         # centre leaves the snout outside its own hitbox.
+SHARK_NOSE_R = 16       # the nose gets a second, smaller circle
 PICKUP_GRAB = 14         # added to the pickup's own radius
+SHIELD_TIME = 9.0
+RAPID_TIME = 6.0
+BOOST_TIME = 7.0
 IFRAMES = 0.35           # no second hit until the flash has faded
+BANNER_GRACE = 0.7       # a result screen ignores input for this long
 
 # Player, Submarines, and Entities
 player = None
@@ -160,6 +165,7 @@ circle11 = [580, 155]
 circle22 = [615, 155]
 
 background_list = None
+wreck_list = None
 
 
 def convert_coordinate(x, y):
@@ -319,7 +325,10 @@ def MidPointCircle(rad):
     zone0 = []
     d_init = 1 - rad
     x_temp = 0
-    while x_temp < rad:
+    # <= not <, so the octant emits its 45 degree pixel. With < the point
+    # where x meets y is never plotted and every hollow circle ends up with
+    # eight notches on its diagonals.
+    while x_temp <= rad:
         if d_init >= 0:
             d_init = d_init + 2 * x_temp - 2 * rad + 5
             zone0.append((x_temp, rad))
@@ -625,9 +634,8 @@ static_list = None
 
 def create_static_list():
     """
-    The wreck, the HUD panels and the button chrome never move, so they are
-    baked once instead of being rebuilt out of points every frame. Together
-    they were about a fifth of everything drawn.
+    The HUD panels and the button chrome never move, so they are baked once
+    instead of being rebuilt out of points every frame.
     """
     global static_list
     if static_list is not None:
@@ -636,9 +644,23 @@ def create_static_list():
     if not static_list:
         return
     glNewList(static_list, GL_COMPILE)
-    draw_titanic()
     draw_hud_panels()
     draw_button_chrome()
+    flush_points()
+    glEndList()
+
+
+def create_wreck_list():
+    """The wreck never moves either, but it needs its own slot in the draw
+    order: behind the submarines, in front of the weeds."""
+    global wreck_list
+    if wreck_list is not None:
+        glDeleteLists(wreck_list, 1)
+    wreck_list = glGenLists(1)
+    if not wreck_list:
+        return
+    glNewList(wreck_list, GL_COMPILE)
+    draw_titanic()
     flush_points()
     glEndList()
 
@@ -819,9 +841,8 @@ def hits_sub(sub, x, y, radius):
     """
     One test for every hazard: the hull box, then the two round ends.
 
-    The radii used to be three to ten times the size of the thing being drawn,
-    so you died to mines you could see yourself clearing. They now match the
-    art.
+    Every radius passed in here is measured off the art, so what looks like a
+    clear miss on screen is a clear miss in the maths.
     """
     if not sub.control:
         return False
@@ -1076,21 +1097,20 @@ class submarine:
         return (min(xs) - HULL_END_R, min(ys),
                 max(xs) + HULL_END_R, max(ys))
 
+    # the tower and the periscope are a third of the drawn height, so they
+    # belong in the box. the propeller does not - it is a thin spinning blade
+    # and clipping it should not cost anyone a life.
+    HITBOX_PARTS = ('main_body', 'lower_body', 'top_body', 'air_duct')
+
     def get_bounding_box(self):
-        x_coords = [self.main_body["mp1"][0], self.main_body["mp2"][0],
-                    self.main_body["mp3"][0], self.main_body["mp4"][0],
-                    self.lower_body["lp1"][0], self.lower_body["lp2"][0],
-                    self.lower_body["lp3"][0], self.lower_body["lp4"][0]]
-        y_coords = [self.main_body["mp1"][1], self.main_body["mp2"][1],
-                    self.main_body["mp3"][1], self.main_body["mp4"][1],
-                    self.lower_body["lp1"][1], self.lower_body["lp2"][1],
-                    self.lower_body["lp3"][1], self.lower_body["lp4"][1]]
-        # has_collided() reads x, y as the bottom left corner, and every other
-        # box in the game is built that way. This one used to return the centre,
-        # so every box test was off by half a hull.
-        min_x, max_x = min(x_coords), max(x_coords)
-        min_y, max_y = min(y_coords), max(y_coords)
-        return AABB(min_x, min_y, max_x - min_x, max_y - min_y)
+        xs, ys = [], []
+        for name in self.HITBOX_PARTS:
+            for point in getattr(self, name).values():
+                xs.append(point[0])
+                ys.append(point[1])
+        # has_collided() reads x, y as the bottom left corner, so this returns
+        # the corner and the size rather than the centre.
+        return AABB(min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys))
 
 
 sub11 = submarine(list1, list2, list3, list4, list5, list6, circle1, circle2, 1)
@@ -1194,6 +1214,10 @@ def damage(sub, amount):
         cx, cy = sub.center()
         burst(cx, cy, 18, [(0.4, 0.85, 1.0), (0.8, 0.95, 1.0)], speed=180, life=0.5)
         sub.shield = 0.0
+        # the same i-frames a normal hit gets. Without them a minefield eats
+        # the shield and a life in the same frame and the shield reads as
+        # having done nothing.
+        sub.flash = IFRAMES
         announce(f"{sub.team['name']} SHIELD ABSORBED IT")
         return
     sub.life = max(0, sub.life - amount)
@@ -1266,8 +1290,14 @@ def apply_physics(dt):
         if max_y > SURFACE_Y - 5:
             sub.move_by(0, SURFACE_Y - 5 - max_y)
             sub.vy = min(0.0, sub.vy)
-        if min_y < SEABED_Y + 8:
-            sub.move_by(0, SEABED_Y + 8 - min_y)
+        # the wreck is a ledge in the middle of the seabed. Standing on it puts
+        # you 70 units higher but in the open, and there is no way to sit
+        # inside it where nothing can reach you.
+        floor = SEABED_Y + 8
+        if WRECK[0] < sub.center()[0] < WRECK[2]:
+            floor = WRECK[3]
+        if min_y < floor:
+            sub.move_by(0, floor - min_y)
             sub.vy = max(0.0, sub.vy)
 
 
@@ -1433,9 +1463,11 @@ def reset_bombs():
     bomb_delay = 0.8
 
 
-# The wreck is solid: torpedoes stop against it. It is the only fixed feature
-# on the map, so it is the only reason to care where you are standing.
-WRECK = (-220, -252, 220, -196)
+# The wreck is solid: torpedoes stop against it and submarines stand on it.
+# It is the only fixed feature on the map, so it is the only reason to care
+# where you are. The box is the drawn hull only - the three funnels above it
+# are thin enough to shoot between, which is half the point of them.
+WRECK = (-220, -252, 220, -230)
 
 
 def wreck_blocks(x, y):
@@ -1544,16 +1576,22 @@ def draw_unique_circles():
 
 def apply_pickup(sub, kind):
     if kind == KIND_HEALTH:
+        gained = min(2, sub.max_life - sub.life)
         heal(sub, 2)
-        announce(f"{sub.team['name']} +2 HEALTH")
+        if gained:
+            announce(f"{sub.team['name']} +{gained} HEALTH")
+        else:
+            # picking it up on full health used to be worth nothing at all
+            sub.shield = max(sub.shield, 3.0)
+            announce(f"{sub.team['name']} PATCHED UP")
     elif kind == KIND_SHIELD:
-        sub.shield = 9.0
+        sub.shield = SHIELD_TIME
         announce(f"{sub.team['name']} SHIELD UP")
     elif kind == KIND_RAPID:
-        sub.rapid = 6.0
+        sub.rapid = RAPID_TIME
         announce(f"{sub.team['name']} RAPID FIRE")
     else:
-        sub.boost = 7.0
+        sub.boost = BOOST_TIME
         announce(f"{sub.team['name']} SPEED BOOST")
 
 
@@ -1583,7 +1621,7 @@ class Mine:
         self.phase = random.uniform(0, 6.28)
         self.active = True
         self.armed = 1.4
-        self.life = 26.0        # they used to sit there for the whole round
+        self.life = 26.0        # a mine clears itself, so the map never silts up
 
     def update(self, dt, t):
         self.x += self.drift * dt
@@ -1689,8 +1727,10 @@ def update_sharks(dt, t):
         if shark.x < -780 or shark.x > 780:
             shark.active = False
             continue
+        nose_x = shark.x + SHARK_NOSE * shark.direction
         for sub in submarines:
-            if hits_sub(sub, shark.x, shark.y, SHARK_R):
+            if (hits_sub(sub, shark.x, shark.y, SHARK_R)
+                    or hits_sub(sub, nose_x, shark.y, SHARK_NOSE_R)):
                 shark.active = False
                 burst(shark.x, shark.y, 22, [(0.8, 0.2, 0.2), (0.9, 0.5, 0.4)],
                       speed=200, life=0.6)
@@ -1798,11 +1838,12 @@ def draw_hud_shapes():
 
         # active power ups
         badge_x = x
-        for label, remaining, col in (("SHIELD", sub.shield, (0.25, 0.65, 0.95)),
-                                      ("RAPID", sub.rapid, (0.98, 0.72, 0.16)),
-                                      ("BOOST", sub.boost, (0.35, 0.85, 0.45))):
+        for label, remaining, full, col in (
+                ("SHIELD", sub.shield, SHIELD_TIME, (0.25, 0.65, 0.95)),
+                ("RAPID", sub.rapid, RAPID_TIME, (0.98, 0.72, 0.16)),
+                ("BOOST", sub.boost, BOOST_TIME, (0.35, 0.85, 0.45))):
             if remaining > 0:
-                draw_bar(badge_x, y - 66, 60, 7, remaining / 7.0, col)
+                draw_bar(badge_x, y - 66, 60, 7, remaining / full, col)
                 badge_x += 70
 
 
@@ -1872,17 +1913,19 @@ def draw_cancel():
 # ====================================================================== #
 
 def end_round(winner):
+    """A round always has a winner: damage() stops landing the moment the loser
+    starts sinking, so the two of them cannot go down together."""
     global state, round_winner, round_over_at, match_winner, game_over, player
     if state not in (STATE_PLAY, STATE_SINKING):
         return
     round_winner = winner
     player = winner
-    if winner:
-        score[winner] += 1
-    else:
-        announce("BOTH SUBMARINES LOST", 2.0)
+    score[winner] += 1
     round_over_at = time.time()
-    if winner and score[winner] >= ROUNDS_TO_WIN:
+    # whoever just lost is usually still leaning on a key. Without this the
+    # banner is gone before either of them has read it.
+    held.clear()
+    if score[winner] >= ROUNDS_TO_WIN:
         match_winner = winner
         state = STATE_MATCH_OVER
         game_over = True
@@ -1890,11 +1933,10 @@ def end_round(winner):
         state = STATE_ROUND_OVER
 
 
-def check_game_over_conditions():
-    # a submarine that has lost its lives sinks first; end_round is called by
-    # auto_fall once it reaches the seabed
-    if state in (STATE_PLAY, STATE_SINKING) and not sub11.control and not sub22.control:
-        end_round(None)
+def banner_settled():
+    """Ignore the first moment of a result screen, so it cannot be skipped by
+    a key or a click that was already on its way when the round ended."""
+    return time.time() - round_over_at > BANNER_GRACE
 
 
 def start_round():
@@ -2013,12 +2055,9 @@ def aim_of(sub):
     """
     Where a submarine is pointing.
 
-    Torpedoes used to steer themselves to the other player, which meant firing
-    was never a decision: you held the key and thought about nothing but
-    dodging. A torpedo now goes where the submarine is moving, so lining up a
-    shot and getting out of the way pull against each other, and that tension
-    is where the game actually lives. Standing still fires level, towards the
-    other player's half.
+    A torpedo goes where the submarine is moving, so lining up a shot and
+    getting out of the way pull against each other. Standing still fires
+    level, towards the other player's half.
     """
     speed = math.hypot(sub.vx, sub.vy)
     if speed < 45:
@@ -2055,17 +2094,61 @@ def fire(sub):
         tor_time2 = now
 
 
+# far enough to cross the map, because a sight that stops short of where the
+# torpedo would still be flying is telling you the wrong thing
+AIM_RANGE = 1440
+AIM_STEP = 16            # one dash every this many units
+
+
+def aim_trace(sub):
+    """
+    Walk the line a torpedo would take and stop at the first thing it would
+    hit. A torpedo flies straight at a constant speed, so the same walk the
+    collision code does frame by frame can be done all at once here, and the
+    sight is telling the truth rather than guessing.
+
+    Returns the dashes to draw, where the shot ends, and whether the thing it
+    ends on is the other submarine.
+    """
+    ux, uy = aim_of(sub)
+    ox, oy = sub.center()
+    x, y = ox, oy
+    enemy = sub22 if sub.num == 1 else sub11
+    dashes = []
+    for _ in range(AIM_RANGE // AIM_STEP):
+        x += ux * AIM_STEP
+        y += uy * AIM_STEP
+        if not WORLD_L < x < WORLD_R or not SEABED_Y < y < SURFACE_Y:
+            break
+        if wreck_blocks(x, y):
+            break
+        if any(m.active and math.hypot(x - m.x, y - m.y) <= MINE_R for m in mines):
+            break
+        if hits_sub(enemy, x, y, TORPEDO_R):
+            return dashes, (x, y), True
+        # the first few dashes sit inside our own hull, so they are skipped
+        if math.hypot(x - ox, y - oy) > 74:
+            dashes.append((x, y))
+    return dashes, (x, y), False
+
+
 def draw_aim_line(sub):
-    """A short dashed line out of the nose, so you can read your own heading."""
+    """The sight: a dashed line that stops where the shot would, red on a lock."""
     if not sub.control:
         return
-    ux, uy = aim_of(sub)
-    cx, cy = sub.center()
-    pts = []
-    for k in range(74, 160, 9):
-        pts.append((cx + ux * k, cy + uy * k))
-    set_color(mix(sub.team['trim'], (1, 1, 1), 0.35))
-    draw_points_batch(pts, 3)
+    dashes, (hx, hy), locked = aim_trace(sub)
+    if locked:
+        # a lock is the one thing worth interrupting the colour scheme for
+        blink = 0.5 + 0.5 * sin(time.time() * 12)
+        set_color(mix((1.0, 0.28, 0.20), (1.0, 0.70, 0.25), blink))
+        draw_points_batch(dashes, 4)
+        # on the last dash rather than on the hull, or the submarine it is
+        # pointing at gets drawn over the top of it
+        rx, ry = dashes[-1] if dashes else (hx, hy)
+        draw_hollow_circle(int(rx), int(ry), 15, (1.0, 0.35, 0.22), 2)
+    else:
+        set_color(mix(sub.team['trim'], (1, 1, 1), 0.35))
+        draw_points_batch(dashes, 3)
 
 
 def set_night(on):
@@ -2078,32 +2161,34 @@ def set_night(on):
 def keyboardListener(key, x, y):
     global paused, restart_game, state
 
-    held.add(key.lower())      # so caps lock does not stop the game working
+    # every comparison below uses the lowered key. Movement was already
+    # lowered but the action keys were not, so with caps lock on both
+    # players could swim and neither could shoot, pause or restart.
+    k = key.lower()
+    held.add(k)
 
-    if key == b'y':
-        set_night(True)
-    elif key == b'u':
-        set_night(False)
-    elif key == b'n':
+    if k == b'n':
         set_night(not night)
 
-    if key in (b'\r', b' '):
+    if k in (b'\r', b' '):
         if state == STATE_MENU:
             reset_game()
         elif state == STATE_ROUND_OVER:
-            next_round()
+            if banner_settled():
+                next_round()
         elif state == STATE_MATCH_OVER:
-            reset_game()
+            if banner_settled():
+                reset_game()
 
-    if key == b'i':
+    if k == b'i':
         if state in (STATE_PLAY, STATE_SINKING):
             paused = not paused
-    if key == b'r':
+    if k == b'r':
         if state != STATE_MENU:
             restart_game = True
-    if key == b'c':
+    if k == b'c':
         fire(sub11)
-    if key == b'p':
+    if k == b'p':
         fire(sub22)
     if key == b'\x1b':
         state = STATE_MENU
@@ -2118,10 +2203,11 @@ def keyboardUpListener(key, x, y):
 
 def entryListener(state_):
     """
-    Clear the held keys when the window loses focus.
+    Clear the held keys when the pointer leaves the window.
 
-    Alt tab while holding a key and the key up event goes to the other window,
-    so the submarine would keep accelerating for ever.
+    A key up event that lands in another window never reaches us, and the
+    submarine keeps accelerating on a key nobody is holding. GLUT has no
+    focus callback, so leaving the window is the signal we get.
     """
     held.clear()
 
@@ -2154,6 +2240,10 @@ def mouseListener(button, state_, x, y):
         # the quit button still quits, even on a banner
         if math.hypot(c_X - 100, c_y + 350) <= 22:
             state = STATE_MENU
+        elif state == STATE_MENU:
+            reset_game()
+        elif not banner_settled():
+            pass
         elif state == STATE_ROUND_OVER:
             next_round()
         else:
@@ -2236,13 +2326,10 @@ def draw_menu_text():
 
 def round_banner_lines():
     if state == STATE_ROUND_OVER:
-        if round_winner:
-            title = f"{TEAM[round_winner]['name']} TAKES ROUND {round_no}"
-        else:
-            title = f"ROUND {round_no} IS A DRAW"
+        title = f"{TEAM[round_winner]['name']} TAKES ROUND {round_no}"
         sub_line = f"{score[1]} - {score[2]}      PRESS ENTER FOR THE NEXT ROUND"
     elif state == STATE_MATCH_OVER:
-        title = f"{TEAM[match_winner]['name']} WINS THE MATCH" if match_winner else "DRAW"
+        title = f"{TEAM[match_winner]['name']} WINS THE MATCH"
         sub_line = f"FINAL {score[1]} - {score[2]}      PRESS ENTER TO PLAY AGAIN"
     else:
         return None
@@ -2286,6 +2373,7 @@ def display():
 
     if background_list is None or background_update_needed:
         create_background_list()
+        create_wreck_list()
         create_static_list()
         background_update_needed = False
     if background_list:
@@ -2297,6 +2385,9 @@ def display():
     draw_light_rays(t)
     draw_sun_moon(t)
     draw_seaweed(t)
+    if wreck_list:
+        flush_points()
+        glCallList(wreck_list)
     draw_fishes()
     draw_surface(t)
     boatMaker(t)
@@ -2344,6 +2435,20 @@ def display():
     glutSwapBuffers()
 
 
+def shift_timers(dt):
+    """Move every wall clock deadline forward, for time the game did not run."""
+    global start_time1, start_time2, tor_time1, tor_time2, announce_until
+    global last_spawn_time, last_spawn_time_shark, last_mine_time
+    start_time1 += dt
+    start_time2 += dt
+    tor_time1 += dt
+    tor_time2 += dt
+    announce_until += dt
+    last_spawn_time += dt
+    last_spawn_time_shark += dt
+    last_mine_time += dt
+
+
 def animate():
     global last_frame, restart_game, shake, fps_shown, _fps_frames, _fps_clock
 
@@ -2367,6 +2472,14 @@ def animate():
     shake = max(0.0, shake - dt * 34)
     t = now
 
+    if paused:
+        # the cooldowns below are wall clock stamps and the wall clock does not
+        # stop when the game does. Pushing them along by dt keeps them the same
+        # distance in the past, otherwise a thirty second pause leaves every
+        # timer overdue and the mines, the shark and both torpedoes all arrive
+        # in the first frame after unpausing.
+        shift_timers(dt)
+
     update_fishes(dt, t)
     update_particles(dt)
     update_rains(dt)
@@ -2379,7 +2492,6 @@ def animate():
         update_submarine_positions(dt)
         update_bombs(dt)
         update_torpedoes(dt)
-        check_game_over_conditions()
     elif state in (STATE_ROUND_OVER, STATE_MATCH_OVER):
         update_submarine_positions(dt)
 
