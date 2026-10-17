@@ -1,272 +1,310 @@
-# Submarine Saga
+<div align="center">
 
-A two player submarine duel, drawn entirely with `GL_POINTS`. Every line comes
-from the midpoint line algorithm and every circle from the midpoint circle
-algorithm, with the eight zone conversions in between — no `GL_LINES`, no
-`GL_POLYGON`, no textures.
+# 🌊 Submarine Saga 🚢
 
-Built as the **CSE423 Computer Graphics** project at BRAC University.
-Python and PyOpenGL, one file, no assets.
+### ⚓ A Torpedo Duel under the Waves ⚓
+
+**A 2D submarine battle game built from scratch with Python & OpenGL**
+
+![Python](https://img.shields.io/badge/Python-3-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![OpenGL](https://img.shields.io/badge/OpenGL-PyOpenGL-5586A4?style=for-the-badge&logo=opengl&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-Ready-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+<br>
+![Tests](https://img.shields.io/badge/Tests-185%20passing-2ea44f?style=for-the-badge)
+![Course](https://img.shields.io/badge/CSE423-Computer%20Graphics-F28C28?style=for-the-badge)
+![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-C0392B?style=for-the-badge)
+
+🎓 *CSE423 Computer Graphics Project — BRAC University*
+👨‍💻 *By **Faiaz Abrar Zaman Pronoy** & **Sinthia Khandoker***
+
+<br>
+
+![Intro](docs/intro.gif)
+
+</div>
 
 ---
 
-## Running it
+<!-- 🔁 After uploading the full video to YouTube, replace BOTH links below
+     (the one on the picture and the one on the text) with your YouTube link. -->
+<div align="center">
+<table>
+<tr>
+<td align="center" width="680">
+
+## 🎬 Watch the Gameplay Video
+
+<a href="https://github.com/FaiazPronoy/Submarine_Saga/releases/latest">
+  <img src="docs/video-thumbnail.png" width="620" alt="Watch the Submarine Saga gameplay video">
+</a>
+
+### [▶️ Click here to watch the full demo](https://github.com/FaiazPronoy/Submarine_Saga/releases/latest)
+
+*Every mode, every level and every feature in 2 minutes* ⏱️
+
+</td>
+</tr>
+</table>
+</div>
+
+<div align="center">
+
+### 🔗 Quick Links
+
+[**⬇️ Download for Windows**](https://github.com/FaiazPronoy/Submarine_Saga/releases/latest) &nbsp;•&nbsp;
+[**🎮 Controls**](#-controls) &nbsp;•&nbsp;
+[**📸 Snapshots**](#-snapshots) &nbsp;•&nbsp;
+[**🧠 Graphics**](#-computer-graphics-used) &nbsp;•&nbsp;
+[**🚀 Run It**](#-getting-started)
+
+</div>
+
+---
+
+## 📖 About
+
+**Submarine Saga** is a fast underwater battle game. Two submarines fight with torpedoes while
+dodging depth charges, mines and a hungry shark. 🦈
+
+Play against the **computer** 🤖 or a **friend** 👥 on the same keyboard.
+
+✨ The special part: **every shape on screen is drawn point by point** using classic computer
+graphics algorithms we wrote ourselves — no images, no ready-made shapes, no game engine.
+
+---
+
+## ✨ Features
+
+### 🎮 Game Modes
+- 🤖 **1 Player** — fight the computer
+- 👥 **2 Players** — fight a friend on one keyboard
+- 📊 **3 Levels** — Easy, Normal and Hard
+- 🏆 **Saved Record** — wins, losses and your best win streak
+
+### 💥 Weapons & Moves
+- 🚀 **Light Torpedo** — 1 damage, fast reload
+- 💣 **Heavy Torpedo** — 3 damage, slow reload, follows the enemy on Hard
+- 🎯 **Free Aiming** — turn your tube to any angle, and it stays there
+- 🔴 **Smart Sight** — a dotted line shows your shot and turns **red** on a hit
+- ⚡ **Dash** — a quick burst of speed to escape
+- 🎈 **Decoy** — tricks a heavy torpedo into chasing it
+
+### 🌊 The Sea
+- 💣 **Depth charges** — yellow marks show where they will land
+- ⚫ **Mines** — drift around; shoot them to clear the way
+- 🦈 **Shark** — its fin warns you before it attacks
+- 🛳️ **Shipwreck** — blocks torpedoes, use it as cover
+
+### 🎁 Power-ups
+| | Power-up | Effect |
+|:---:|---|---|
+| ❤️ | **Health** | +3 lives |
+| 🛡️ | **Shield** | Blocks the next hit |
+| ⚡ | **Rapid Fire** | Reload twice as fast |
+| 💨 | **Speed** | Move faster |
+
+### 🎯 Battle Rules
+- ❤️ **10 lives** each
+- 🏁 **Win 2 rounds** to win the match
+- ⚠️ **Red warning** a second before a torpedo hits
+- 🔥 **Last Stand** — at 2 lives you get faster
+- ☠️ **Sudden Death** after 1 minute — the sea gets angry!
+
+### 🎨 Look & Feel
+- 📡 Animated **sonar intro**
+- 🌙 **Day & night** modes
+- 💥 Explosions, bubbles, smoke, splashes and 🎆 fireworks
+- 🐢 **Slow motion** on the final hit
+- 🔊 Sound effects
+- 🖥️ Works in **any window size**, even full screen
+
+---
+
+## 📊 Levels
+
+| Feature | 🟢 Easy | 🟡 Normal | 🔴 Hard |
+|---|:---:|:---:|:---:|
+| 🚀 Light torpedo | ✅ | ✅ | ✅ |
+| 💣 Heavy torpedo | ❌ | ✅ | ✅ *homing* |
+| 💥 Heavy torpedo blast | ❌ | ❌ | ✅ |
+| 🎈 Decoy | ❌ | ❌ | ✅ |
+| 🤖 Computer skill | 😌 Calm | 😐 Medium | 😈 Sharp |
+
+---
+
+## 🎮 Controls
+
+| Action | 🟢 Player 1 | 🔴 Player 2 |
+|---|:---:|:---:|
+| 🧭 Move & aim | `W` `A` `S` `D` | `↑` `←` `↓` `→` |
+| 🚀 Torpedo | `Space` | `P` |
+| 💣 Heavy torpedo | `F` | `O` |
+| ⚡ Dash | `E` | `L` |
+| 🎈 Decoy | `Q` | `K` |
+
+| Key | Action |
+|:---:|---|
+| `H` | ❓ Help |
+| `I` | ⏸️ Pause |
+| `R` | 🔄 Restart |
+| `N` | 🌙 Day / Night |
+| `M` | 🔊 Sound On / Off |
+| `Esc` | 🏠 Main Menu |
+
+> 💡 **Playing alone?** You can use either set of keys.
+
+---
+
+## 🕹️ How to Play
+
+1. 🏠 Choose **1 Player** or **2 Players**, then pick a level
+2. 🧭 Move with your keys — your torpedo tube turns with you
+3. ✋ Let go — the tube **stays** at that angle
+4. 🔴 When the dotted sight turns **red**, fire! 🚀
+5. 🏃 Keep moving and watch for the ⚠️ red warning
+6. 🏆 Sink the enemy twice to **win the match**
+
+---
+
+## 📸 Snapshots
+
+<div align="center">
+
+| 🏠 Title Screen | ❓ How to Play |
+|:---:|:---:|
+| ![Title screen](docs/screenshots/01-title.png) | ![How to play](docs/screenshots/02-how-to-play.png) |
+| 💣 **Heavy Torpedo Hit** | 🎈 **Decoy vs Homing Torpedo** |
+| ![Heavy hit](docs/screenshots/07-heavy-hit.png) | ![Decoy](docs/screenshots/08-decoy.png) |
+| 🎯 **Free Aim & Red Sight** | 🦈 **Shark Down** |
+| ![Free aim](docs/screenshots/09-free-aim.png) | ![Shark down](docs/screenshots/10-shark-down.png) |
+| 🛡️ **Shield** | ⚔️ **Battle** |
+| ![Shield](docs/screenshots/11-shield.png) | ![Battle](docs/screenshots/03-battle.png) |
+| 🌙 **Night & Sudden Death** | 🌊 **A Submarine Sinking** |
+| ![Night](docs/screenshots/04-night-sudden-death.png) | ![Sinking](docs/screenshots/05-sinking.png) |
+| 👥 **Two Players** | 🏆 **Match Result** |
+| ![Two players](docs/screenshots/12-two-players.png) | ![Result](docs/screenshots/06-result.png) |
+
+</div>
+
+---
+
+## 🧠 Computer Graphics Used
+
+> 🎨 Every shape is drawn with `GL_POINTS` only — built from these algorithms, written from scratch.
+
+| 🧩 Topic | 🎯 Used For |
+|---|---|
+| 📏 **Midpoint Line** *(8-zone)* | Every line — outlines, arrows, sight, buttons |
+| ⭕ **Midpoint Circle** *(8-way symmetry)* | Portholes, bubbles, mines, rings, the sun |
+| 🖌️ **Scanline Polygon Fill** | Submarines, fish, shark, boat, title letters |
+| ✂️ **Cohen–Sutherland Clipping** | Cutting the aim line to the water |
+| ➡️ **Translation** | Moving everything on screen |
+| 🔄 **Rotation** | A submarine tilting as it sinks |
+| 🪞 **Reflection** | A submarine turning around |
+| 🔍 **Scaling** | Heavy torpedo, intro title shrinking |
+| 🌈 **Color Interpolation** | Sky & sea gradients, fading effects |
+| 🖥️ **Viewport Mapping** | Right shape at any window size |
+| ⚡ **Display Lists & Double Buffering** | Smooth ~75 FPS |
+| 💥 **Collision Detection** | Exact hit shapes — nothing passes through |
+
+---
+
+## 🛠️ Built With
+
+| | Tool | Used For |
+|:---:|---|---|
+| 🐍 | **Python 3** | The whole game |
+| 🟦 | **PyOpenGL** | Drawing (included in the project) |
+| 🪟 | **GLUT (freeglut)** | Window, keyboard and mouse |
+| 📦 | **PyInstaller** | Building the Windows `.exe` |
+
+> 🚫 No images · 🚫 No sound files · 🚫 No game engine — **everything is made in code** ✨
+
+---
+
+## 🚀 Getting Started
+
+### 🪟 Option 1 — Just Play (no Python needed)
+1. ⬇️ Download the zip from **[Releases](https://github.com/FaiazPronoy/Submarine_Saga/releases/latest)**
+2. 📂 Unzip it
+3. ▶️ Run `SubmarineSaga.exe`
+
+> ⚠️ Windows may show a SmartScreen warning the first time — click **More info → Run anyway**.
+
+### 🐍 Option 2 — Run from Source
+1. Install **Python 3**
+2. Clone or download this repository
+3. Double-click **`Play Submarine Saga.bat`**, or run:
 
 ```bash
 python "Submarine Saga (CSE423 Project).py"
 ```
 
-Nothing has to be installed: the `OpenGL` folder beside this file is a copy of
-PyOpenGL, and Python finds it because it sits next to the script.
+> ✅ No extra installs — PyOpenGL is already inside the project.
 
-`numpy` is used if it is there and skipped if it is not. With it, the point
-batches go to OpenGL as vertex arrays and the game runs noticeably faster; take
-it if you have it:
-
+### 📦 Build the `.exe` Yourself
 ```bash
-pip install numpy
+python -m pip install pyinstaller
+packaging\build_exe.bat
 ```
 
-## Controls
-
-| | Left submarine (Markava) | Right submarine (Destroyer) |
-|---|---|---|
-| Move | `W` `A` `S` `D` | arrow keys |
-| Fire | `C` | `P` |
-
-**A torpedo goes wherever the submarine is moving.** Standing still fires
-level. So lining up a shot and getting out of the way are the same set of keys,
-and they pull against each other — that is the game.
-
-The dotted line out of the nose is the **sight**, and it is not decoration: it
-walks the exact path the next torpedo would take and stops at the first thing
-that path runs into — the wreck, a mine, the seabed, the edge of the map. When
-what it stops on is the other submarine, it turns red and puts a ring on the
-target. A torpedo flies straight at a constant speed, so the walk is an exact
-prediction rather than a guess.
-
-`Enter` start / next round · `I` pause · `R` restart the match ·
-`N` day and night · `Esc` back to the menu.
-The three buttons along the bottom do restart, pause and quit to the menu.
-
-## How a match works
-
-Each submarine starts with five lives. Lose them all and you sink, and the
-other player takes the round. **First to two rounds wins the match.** The score
-sits next to each name in the corner panels.
-
-Things that will hurt you:
-
-- **Torpedoes** from the other player, in whatever direction they were heading
-- **Depth charges** from the boat above. A yellow bracket marks the sand where
-  each one is going to land, so the pass can be read before it arrives
-- **Drifting mines.** A tightening ring means one is still arming and cannot
-  hurt you yet; a blinking ring means it is about to expire
-- **A shark.** A fin cuts the surface a second before it appears
-
-Nothing here is only a hazard. **A torpedo destroys a mine, kills a shark, and
-shoots down another torpedo**, so the things in the water are something to use
-rather than only something to survive.
-
-The **wreck on the seabed is solid.** Torpedoes and depth charges break against
-it, so it is real cover, and submarines stand on its deck rather than passing
-through it — the middle of the map has a floor seventy units higher than the
-sand either side of it. Standing on the wreck is a better firing position and a
-worse hiding place, which is the only reason the map has terrain at all.
-
-If you are down to your last life you move faster, reload faster, and pickups
-start falling on your side.
-
-Things worth swimming for — they fall from the surface and drift as they go:
-
-| | |
-|---|---|
-| red cross | two lives back |
-| blue ring | a shield that absorbs the next hit |
-| yellow bolt | rapid fire, half the usual reload |
-| green arrow | a speed boost |
-
-## What changed in this version
-
-The first version worked, but it was too slow to play and both submarines were
-the same colour, so you could not tell which one was yours.
-
-Timing `display()` on my laptop, best of six runs of thirty frames each,
-alternating between the two builds so they meet the same conditions: the first
-version lands between 155 and 261 ms a frame, this one between 28 and 41. The
-absolute numbers move around with whatever else the machine is doing, but the
-gap does not — **it is about six times faster**, and it is the difference
-between a slideshow and something you can play.
-
-**Speed.** `draw_points` opened and closed a `glBegin`/`glEnd` block for every
-single point, and the whole screen is points. Points are now collected into
-runs of the same colour and size and sent as one vertex array each, and the
-midpoint circle results are cached because the same radius comes up every
-frame. The algorithms themselves are untouched — the same points end up on
-screen, in the same order.
-
-**Movement.** A key press moved a submarine a fixed twenty units, so how fast
-you travelled depended on the operating system's key repeat rate, and holding a
-key gave a stutter. Keys now set an intent, and a physics step runs once a
-frame with acceleration, drag and walls, so a submarine builds up speed and
-coasts when you let go.
-
-**Aiming.** Torpedoes steered themselves to the other player, so firing was
-never a decision — you held the key down and thought only about dodging. They
-now go where you are pointing. That also fixed two bugs the auto-aim was
-hiding: player two's torpedoes climbed when they should have dived, because the
-vertical component was negated twice, and firing while the two submarines were
-on the same vertical line divided by zero and killed the game.
-
-**Collisions.** `get_bounding_box` returned the centre of the hull while
-`has_collided` expects the bottom left corner, so every box test in the game was
-off by half a submarine. The hit radii were also three to ten times the size of
-the thing being drawn — a depth charge is 7 pixels across and killed you from
-70 away. Every radius now matches the art and lives beside the other tunables at
-the top of the file.
-
-**Taking four hits in one frame.** Nothing stopped the torpedoes, the depth
-charges, the mines and the shark from all calling `damage()` on the same frame,
-so you could lose four of five lives at once with a single flash to show for it.
-A hit now grants a short moment of invulnerability.
-
-**Depth charges going to infinity.** The sideways speed was `1/tan(angle)` with
-the angle picked from a sixty degree range. At some angles a charge fell dead
-straight; at others it crossed the map in a single frame and was gone before it
-could be seen. It is a plain horizontal speed now.
-
-**Diagonal movement was 41% faster**, because the speed cap was applied to each
-axis separately. Travelling at an angle was strictly the best way to move.
-
-**Keys sticking down.** Alt tab while holding a key and the key up event went to
-the other window, so the submarine accelerated into the wall for ever. The held
-keys are dropped when the pointer leaves the window, and `glutIgnoreKeyRepeat`
-stops the auto repeat making the held key set flicker. GLUT has no focus
-callback, so leaving the window is the closest signal there is.
-
-**Bookkeeping.** Bubbles, sharks, spent torpedoes and used pickups were never
-removed from their lists, so a long game got slower and slower.
-
-**Drawing.** `draw_filled_shape` only ever drew the outline of a shape, which
-is why the submarines looked like wireframes. There is a scanline fill now, so
-a hull is a hull, and the function is called `draw_outline` because that is
-what it does.
-
-**Circles with eight notches in them.** The midpoint circle loop ran
-`while x < r`, which stops one pixel before the octant reaches the 45 degree
-diagonal, and the eight mirrored copies each end one pixel short of their
-neighbour. Measuring the largest gap between neighbouring pixels across radii
-3 to 95: worst case **2.83 pixels before, 1.41 after**, 45 radii improved and
-none made worse. The condition is `while x <= r`.
-
-**Torpedoes passing through each other.** Collisions were tested where a
-torpedo *ended* the frame, not where it *travelled*. A torpedo covers 50 units
-in a frame and the interception radius is 26, so at a low frame rate two
-torpedoes swapped places without ever being close enough to notice. Firing 60
-head-on pairs: **27 of 60 passed straight through at 20 fps, 14 of 60 at 30**.
-The test is now the distance from the other torpedo to the *segment* the
-torpedo covered, and it is 0 of 60 at every frame rate I tried.
-
-**Caps lock broke half the keyboard.** The movement keys were lowered before
-being compared and the action keys were not, so with caps lock on both players
-could swim and neither could shoot, pause or restart.
-
-**A third of each submarine could not be hit.** `get_bounding_box` was built
-from the hull and the keel only, so the conning tower and the periscope — 35 of
-the 100 units you can see — were outside every collision shape. The propeller
-is still left out, deliberately: it is a thin spinning blade and clipping it
-should not cost a life.
-
-**The shark bit with its middle.** It was one circle of radius 26 at its centre
-while the drawing runs 46 units ahead of that centre, so the teeth reached
-about 20 units past anything that could register. Nose and body get a circle
-each now.
-
-**The wreck was a hiding place with no way in.** It was drawn *after* the
-submarines, so it painted over them; and its box covered the whole band the
-seabed clamp puts a hull in, so a player parked on the sand inside it could not
-be reached by a torpedo or a depth charge. The box is now the drawn hull only,
-the wreck has its own slot in the draw order — behind the submarines, in front
-of the weeds — and it is solid ground rather than a room.
-
-**Pausing banked up the game.** Reload and spawn deadlines are wall clock
-stamps, and the wall clock does not stop when the game does. A thirty second
-pause left every timer overdue, so unpausing dropped a mine, a shark and both
-players' torpedoes into the same frame.
-
-**A shield cost a life anyway.** Breaking a shield returned before granting the
-moment of invulnerability an ordinary hit grants, so a second hazard in the
-same frame went straight through and the shield read as having done nothing.
-
-**Power up bars all divided by seven** while a shield lasts nine seconds and
-rapid fire six, so a fresh shield overflowed its bar and rapid fire started
-already a seventh spent. The three durations are named constants the HUD reads.
-
-**A hull went down flat**, translated straight to the seabed like something
-being lowered on a rope. It turns as it falls now — a plain 2D rotation of
-every point about the average of the four hull corners, which is the one point
-a rotation leaves where it is. About thirty degrees over the whole way down.
-Nothing else in the game rotates: every hit box is axis aligned, and a tilted
-hull would not be tested honestly, but by the time this runs the submarine is
-out of the round and nothing is testing it.
-
-**The result banner could not be read.** Whoever just lost is usually still
-leaning on a key, and the next round started before either player saw who won.
-A result screen ignores input for its first 0.7 seconds and the held keys are
-released when a round ends.
-
-**New:** heading based aiming with a sight that traces the real path of the
-shot, torpedoes that destroy mines, sharks and each other, the wreck as cover
-and as ground you can stand on, warning markers on the depth charges
-and the shark, a last stand for whoever is behind, the round and match system,
-the title screen, four kinds of pickup instead of one, mines that arm and
-expire, explosion particles, fish, seaweed, light shafts, a depth gradient, a
-wavy surface, screen shake, and a head up display with health, lives, reload
-and the power ups that are running.
-
-## Layout
-
-```
-Submarine Saga (CSE423 Project).py
-├── point batching          set_color, draw_points_batch, flush_points
-├── midpoint line           MidPointLine, findZone, convertToZone0, convertToZoneM
-├── midpoint circle         MidPointCircle, zone_converter, disc_points
-├── shape helpers           draw_lines, draw_filled_circle, fill_polygon, fill_gradient
-├── background              sky, water, seabed, seaweed, light rays, sun and moon
-├── entities                Torpedo, Bubble, rain, Particle, Fish, Mine,
-│                           UniqueCircle, Shark, submarine
-├── HUD                     health bars, lives, reload, power ups, banners
-├── rounds                  start_round, end_round, next_round, reset_game
-├── input                   held keys, apply_input, fire
-└── frame                   display, animate, GLUT callbacks
-```
-
-## Tests
-
-`tests/test_game.py` drives the game without anyone at the keyboard: it starts
-a match, holds keys, fires, takes damage, wins rounds, and checks the entity
-lists do not grow for ever. It covers the crash and the leaks described above,
-so they cannot come back quietly.
-
+### 🧪 Run the Tests
 ```bash
 python tests/test_game.py
 ```
+> ✅ **185 automated checks** — graphics algorithms, collisions, game rules and the computer player.
 
-It works from any directory. The test lives in `tests/`, so Python puts *that*
-folder on the import path rather than the project root, and the bundled
-`OpenGL` copy would not be found — the test puts the project root on the path
-itself before importing anything.
+---
 
-**85 checks, all passing.** They include one per bug listed above, so none of
-them can come back quietly: both players' torpedoes are checked for direction,
-the collision box is checked against the hull it belongs to, four hits in one
-frame are checked to cost one life, and three hundred depth charge passes are
-checked for a sane speed.
+## 📁 Project Structure
 
-## Known limitations
+```
+Submarine_Saga/
+├── 🎮 Submarine Saga (CSE423 Project).py   # the game
+├── ▶️ Play Submarine Saga.bat              # double-click to play
+├── 🧪 tests/test_game.py                   # automated tests
+├── 📦 packaging/                           # builds the Windows .exe
+├── 📚 docs/                                # GIFs, snapshots, development notes
+├── 📜 LICENSE                              # all rights reserved
+└── 🟦 OpenGL/                              # PyOpenGL library (third party)
+```
 
-- There is no sound. GLUT has no audio of its own.
-- Both players share one keyboard; there is no network play.
-- The frame rate depends on the graphics driver, because everything is drawn as
-  individual points. It is comfortable on a normal laptop and slow inside a
-  virtual machine with software rendering.
+📘 Want the full story — how it works and every bug we fixed? Read the
+**[Development Notes](docs/DEVELOPMENT.md)**.
+
+---
+
+## 👥 Team
+
+<div align="center">
+
+| 👨‍💻 Faiaz Abrar Zaman Pronoy | 👩‍💻 Sinthia Khandoker |
+|:---:|:---:|
+| **Lead Developer** | **Developer** |
+| [@FaiazPronoy](https://github.com/FaiazPronoy) | |
+
+</div>
+
+---
+
+## 📜 License
+
+**© 2024–2026 Faiaz Abrar Zaman Pronoy & Sinthia Khandoker. All rights reserved.**
+
+- ✅ You **can** read the code and play the game for personal use
+- ❌ You **cannot** copy, change, share, sell, or submit any part of it as your own work — without written permission
+
+📄 See [LICENSE](LICENSE) for full terms. The bundled `OpenGL/` folder (PyOpenGL & freeglut) is third-party software under its own licenses.
+
+---
+
+<div align="center">
+
+### ⭐ If you enjoyed Submarine Saga, give it a star! ⭐
+
+Made with 💙 by **Faiaz Abrar Zaman Pronoy** & **Sinthia Khandoker**
+for 🎓 **CSE423 Computer Graphics** at **BRAC University**
+
+🌊🚢💥🌊
+
+</div>

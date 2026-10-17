@@ -1,2 +1,7 @@
 __pycache__/
 *.py[cod]
+submarine_saga_save.json
+packaging/build/
+packaging/dist/
+# local notes, not part of the project
+private/
