@@ -25,29 +25,19 @@
 
 ---
 
-<!-- 🔁 After uploading the full video to YouTube, replace BOTH links below
-     (the one on the picture and the one on the text) with your YouTube link. -->
 <div align="center">
-<table>
-<tr>
-<td align="center" width="680">
 
 ## 🎬 Watch the Gameplay Video
 
-<a href="https://github.com/FaiazPronoy/Submarine_Saga/releases/latest">
-  <img src="docs/video-thumbnail.png" width="620" alt="Watch the Submarine Saga gameplay video">
-</a>
-
-### [▶️ Click here to watch the full demo](https://github.com/FaiazPronoy/Submarine_Saga/releases/latest)
+https://github.com/user-attachments/assets/a4dba5c5-9015-4feb-988a-f61c02cfbee7
 
 *Every mode, every level and every feature in 2 minutes* ⏱️
 
-</td>
-</tr>
-</table>
 </div>
 
+
 <div align="center">
+
 
 ### 🔗 Quick Links
 
