@@ -1,0 +1,37 @@
+Submarine Saga
+Copyright (c) 2024-2026 Faiaz Abrar Zaman Pronoy and Sinthia Khandoker.
+All rights reserved.
+
+This repository - the game's source code, its graphics and the way they are
+drawn, its game design, the tests, the documentation, the screenshots and the
+videos - is the work of the authors named above and belongs to them.
+
+YOU MAY
+  - read the code and the documentation on GitHub;
+  - download and play the game for your own, personal use.
+
+YOU MAY NOT, without the authors' written permission:
+  - copy, modify, merge, publish, distribute, sublicense or sell the code or
+    any part of it;
+  - submit this project, or any part of it, as your own work for a course,
+    assignment, competition or anything else;
+  - remove or change the copyright notices, the credits, or any mark that
+    identifies the authors.
+
+Viewing or forking this repository on GitHub, as GitHub's Terms of Service
+allow, does not give you any of the rights above.
+
+To ask for permission, contact Faiaz Abrar Zaman Pronoy
+(https://github.com/FaiazPronoy).
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+-------------------------------------------------------------------------------
+Third-party software in this repository is NOT covered by this licence:
+
+  - OpenGL/      PyOpenGL, by Mike C. Fletcher and contributors, under its own
+                 BSD-style licence (https://pypi.org/project/PyOpenGL/).
+  - OpenGL/DLLS  freeglut and GLE libraries, under their own licences; see
+                 freeglut_COPYING.txt, gle_COPYING and the other files there.
