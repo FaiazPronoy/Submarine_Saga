@@ -31,13 +31,15 @@
 
 https://github.com/user-attachments/assets/a4dba5c5-9015-4feb-988a-f61c02cfbee7
 
-*Every mode, every level and every feature in 2 minutes* ⏱️
+*A quick 47-second look at the game* ⏱️
+
+🎥 **Want to see everything?** Watch the
+**[full 2-minute tour](https://github.com/FaiazPronoy/Submarine_Saga/releases/download/v2.0/SubmarineSaga-full-showcase.mp4)** -
+every mode, every level and every feature.
 
 </div>
 
-
 <div align="center">
-
 
 ### 🔗 Quick Links
 
