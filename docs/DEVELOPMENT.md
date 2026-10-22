@@ -3,8 +3,8 @@
 The full write-up behind the game: how each part works, every bug that was found and fixed, and why things are the way they are. For a short overview, see the [README](../README.md).
 
 
-A submarine torpedo duel - against the computer or a friend on the same
-keyboard - where every pixel on screen is a `GL_POINTS` vertex placed by
+A submarine torpedo duel, against the computer or a friend on the same
+keyboard, where every pixel on screen is a `GL_POINTS` vertex placed by
 algorithms written from scratch: midpoint lines with eight-zone conversion,
 midpoint circles with eight-way symmetry, scanline polygon fill, Cohen-Sutherland
 clipping, and hand-written translation, rotation and reflection. No `GL_LINES`,
@@ -17,8 +17,8 @@ and PyOpenGL.
 
 ![Two submarines fighting on HARD](gameplay.gif)
 
-**[Download for Windows](https://github.com/FaiazPronoy/CSE423_Project_Submarine_Saga/releases/latest)**
-- unzip and run `SubmarineSaga.exe`, no Python needed.
+**[Download for Windows](https://github.com/FaiazPronoy/CSE423_Project_Submarine_Saga/releases/latest)**:
+unzip and run `SubmarineSaga.exe`, no Python needed.
 
 ### Highlights
 
@@ -28,7 +28,7 @@ and PyOpenGL.
   the lettering shrinks and slides up to become the title screen's heading.
 - **A computer opponent that plays fair** on three levels: it looks for you
   every so often and aims where it last saw you, so moving keeps you alive.
-- **Two torpedoes**: a quick light one and a heavy one that homes and blasts -
+- **Two torpedoes**: a quick light one and a heavy one that homes and blasts,
   plus decoys, dash, pickups, drifting mines, a shark, depth charges and a wreck
   to hide behind.
 - **Exact collisions**: the hit shapes are the hull's own polygons and circles,
@@ -67,7 +67,7 @@ python "Submarine Saga (CSE423 Project).py"
 Nothing has to be installed: the `OpenGL` folder beside this file is a copy of
 PyOpenGL, and Python finds it because it sits next to the script.
 
-Nothing else is needed - not even `numpy`.
+Nothing else is needed: not even `numpy`.
 
 ## Modes
 
@@ -78,7 +78,7 @@ The title screen has three rows:
   time. It looks every so often (every 1.5 s on EASY, 1 s on NORMAL,
   0.55 s on HARD) and aims at where you were when it last looked, its tube
   turns at its own rate, it gets no aim snap, and it has to wait between
-  shots. So a player who keeps moving is one it has to hunt - fire, then move,
+  shots. So a player who keeps moving is one it has to hunt: fire, then move,
   and its torpedo goes where you used to be. It dodges torpedoes it sees
   coming, drops decoys against heavy torpedoes, fires heavy torpedoes of its
   own, goes for pickups and uses its dash. Wins and losses against each level and your
@@ -98,7 +98,7 @@ is:
 | The computer | slow, loose aim | quicker | sharp, dodges and uses decoys |
 
 EASY is the plain game, one kind of torpedo, for learning to aim. Everything
-else - ten lives, the aim that holds its angle, the snap, dash - is on every
+else (ten lives, the aim that holds its angle, the snap, dash) is on every
 level. The HUD shows the level in the middle and only the reload bars the
 level has; the help screen greys out what it does not.
 - **HOW TO PLAY**, the help screen. `H` or `F1` opens it from anywhere, and it
@@ -127,7 +127,7 @@ wherever the tube points, so a torpedo always leaves from the nose.
 
 The dotted line out of the nose is the **sight**, and it is not decoration: it
 walks the exact path the next light torpedo would take and stops at the first
-thing that path runs into - the wreck, a mine, the seabed, the edge of the map.
+thing that path runs into: the wreck, a mine, the seabed, the edge of the map.
 When what it stops on is the other submarine, it turns red and puts a ring on
 the target. **Close is good enough:** a player's shot within 9° of the other submarine
 snaps onto it, and the sight shows the snapped line, so diagonal and corner
@@ -139,12 +139,12 @@ shots do not need the exact degree.
 |---|---|---|
 | Damage | 1 | 3, and 1 more from the blast to anyone near it |
 | Reload | 0.6 s | 3 s |
-| Speed | 430 - about three seconds to cross the map | 300 |
+| Speed | 430: about three seconds to cross the map | 300 |
 | Path | straight | straight on NORMAL; on HARD turns gently towards the target it can see ahead |
 | Level | all | NORMAL and HARD |
 
 The heavy torpedo is the one worth waiting for: its reload bar in the corner
-flashes when it is ready. On HARD it homes, and there it has an answer - the **decoy**,
+flashes when it is ready. On HARD it homes, and there it has an answer: the **decoy**,
 a noise maker you drop behind you. A heavy torpedo that can hear a decoy goes
 for it instead. Dodging still works too: it only turns so fast, so crossing in
 front of it quickly or getting out of its cone shakes it off. Its blast hurts
@@ -185,7 +185,7 @@ the water are something to use rather than only something to survive.
 
 The **wreck on the seabed is solid.** Torpedoes and depth charges break against
 it, so it is real cover, and submarines stand on its deck rather than passing
-through it - the middle of the map has a floor seventy units higher than the
+through it: the middle of the map has a floor seventy units higher than the
 sand either side of it. Standing on the wreck is a better firing position and a
 worse hiding place, which is the only reason the map has terrain at all.
 
@@ -193,7 +193,7 @@ With two lives or fewer you are on your **last stand**: you move faster and
 reload faster, and pickups start falling on your side. A damaged hull trails
 smoke, so how hurt the other player is shows on their submarine too.
 
-Things worth swimming for - they fall from the surface and drift as they go:
+Things worth swimming for. They fall from the surface and drift as they go:
 
 | | |
 |---|---|
@@ -212,28 +212,28 @@ primitive, and no vertex arrays. Tests check both in the source.
 | Midpoint line with the eight zone conversions | `MidPointLine`, `findZone`, `convertToZone0`, `convertToZoneM`, used by `draw_lines` for every edge, spike, arrow and key cap |
 | Midpoint circle with eight way symmetry | `MidPointCircle`, `zone_converter`; `draw_arc` draws chosen octants only, for the hull outline and the `?` button |
 | Filled circles | `disc_points`, spans between the midpoint circle's points |
-| Scanline polygon fill (even-odd rule) | `scanline_points`, `fill_polygon` - hulls, fish, the shark, the boat |
+| Scanline polygon fill (even-odd rule) | `scanline_points`, `fill_polygon`: hulls, fish, the shark, the boat |
 | Translation | `submarine.move_by` by hand; and `glTranslatef`, which moves a shape rasterised once to wherever it is drawn |
 | Scaling, and interpolating between two layouts | the intro's lettering shrinks and slides from its big layout to the title screen's (`lerp_layout`), and the menu panel opens out from its centre |
-| A pixel font of its own | `TITLE_FONT`, `glyph_part`, `draw_title` - 5 × 7 glyphs, each lit cell a scanline-filled square with a stepped extrusion behind it and a gold-to-orange gradient |
+| A pixel font of its own | `TITLE_FONT`, `glyph_part`, `draw_title`: 5 × 7 glyphs, each lit cell a scanline-filled square with a stepped extrusion behind it and a gold-to-orange gradient |
 | Rotation about a point | `submarine.rotate_by`, the sinking hull; the hit shape turns with it |
 | Reflection | `submarine.flip`, x → 2cx − x, how a submarine turns round |
-| Colour interpolation | `mix`, `fill_gradient` - sky, water and sand gradients, fading particles |
+| Colour interpolation | `mix`, `fill_gradient`: sky, water and sand gradients, fading particles |
 | Orthographic projection and window → world mapping | `glOrtho` in `display`, `convert_coordinate` for the mouse, screen shake as a projection offset |
-| Cohen-Sutherland line clipping | `region_code`, `cohen_sutherland` - the sight's line of fire is clipped to the water, so it ends exactly on the wall, the surface or the sand |
+| Cohen-Sutherland line clipping | `region_code`, `cohen_sutherland`: the sight's line of fire is clipped to the water, so it ends exactly on the wall, the surface or the sand |
 | Collision geometry | point in polygon by ray casting, segment-segment and segment-polygon distance, swept capsules (`capsule_hits_shape`) |
 | Display lists and double buffering | every shape's `glVertex2f` calls are recorded once and replayed with `glCallList`; the sky, sea, wreck and HUD panels are baked whole; `GLUT_DOUBLE` |
 | Particle systems and dt based animation | explosions, bubbles, trails, smoke, rain |
 
 ## What changed in the fifth version
 
-**An intro.** The game opens on a four-second intro - press any key or click to
+**An intro.** The game opens on a four-second intro: press any key or click to
 skip it. A sonar ping spreads from the middle of the water, and each letter of
 the name rises out of the water as the ping reaches it, swaying with the
 waves; a submarine glides past underneath, a glint runs across the name, and
 then the lettering shrinks and slides up while the title screen's panel opens
-out behind it. The name is in a pixel font of the game's own - GLUT's bitmap
-fonts cannot be scaled - and the same lettering is the title screen's heading.
+out behind it. The name is in a pixel font of the game's own, since GLUT's bitmap
+fonts cannot be scaled, and the same lettering is the title screen's heading.
 
 **Text in one call.** A line of text was drawn one `glutBitmapCharacter` call
 per letter, which was most of the title screen's frame time. It is now one
@@ -248,7 +248,7 @@ GLUT does not have it.
 37,000 points and a Python call per point costs about a microsecond, so each
 shape's calls are recorded into a display list the first time it is drawn,
 and after that it is replayed with `glCallList`, moved into place with
-`glTranslatef`. Points that change every frame - particles, rain, the sight -
+`glTranslatef`. Points that change every frame (particles, rain, the sight)
 go straight out as `glVertex2f`. Rendered side by side in the same frame, the
 two versions differ in no pixel at all, and the frame time is about the
 same. `numpy` is no longer used.
@@ -258,7 +258,7 @@ submarine was moving, so an angled shot meant swimming at that angle and
 firing before the submarine stopped, and the torpedo crossed the whole map in
 just over a second. The tube now has its own angle that stays where you leave
 it, shots within 9° of the target snap onto it, and torpedoes run at 430
-(light) and 300 (heavy) instead of 1000 - slow enough to see coming and dodge.
+(light) and 300 (heavy) instead of 1000: slow enough to see coming and dodge.
 
 **The computer always had you in its sights.** It turned its tube to your
 exact position every frame, got the same aim snap a player gets, and fired the
@@ -306,7 +306,7 @@ check is off. The same frame takes about 12 ms.
 **Controls.** Holding fire keeps firing. There is a dash. Pushing against your
 own motion gets extra thrust and a released axis brakes, so the submarine
 answers the keys instead of drifting. It turns round when it swims backwards,
-so the nose - and the torpedo tube - points the way it is going.
+so the nose (and the torpedo tube) points the way it is going.
 
 **Collisions are exact.** The hit shape is the hull's own polygons and its
 round caps, not a box round them: the nose and tail caps used to be outside it
@@ -349,14 +349,14 @@ Timing `display()` on my laptop, best of six runs of thirty frames each,
 alternating between the two builds so they meet the same conditions: the first
 version lands between 155 and 261 ms a frame, this one between 28 and 41. The
 absolute numbers move around with whatever else the machine is doing, but the
-gap does not - **it is about six times faster**, and it is the difference
+gap does not: **it is about six times faster**, and it is the difference
 between a slideshow and something you can play.
 
 **Speed.** `draw_points` opened and closed a `glBegin`/`glEnd` block for every
 single point, and the whole screen is points. Points are now collected into
 runs of the same colour and size and sent as one vertex array each, and the
 midpoint circle results are cached because the same radius comes up every
-frame. The algorithms themselves are untouched - the same points end up on
+frame. The algorithms themselves are untouched: the same points end up on
 screen, in the same order.
 
 **Movement.** A key press moved a submarine a fixed twenty units, so how fast
@@ -366,7 +366,7 @@ frame with acceleration, drag and walls, so a submarine builds up speed and
 coasts when you let go.
 
 **Aiming.** Torpedoes steered themselves to the other player, so firing was
-never a decision - you held the key down and thought only about dodging. They
+never a decision: you held the key down and thought only about dodging. They
 now go where you are pointing. That also fixed two bugs the auto-aim was
 hiding: player two's torpedoes climbed when they should have dived, because the
 vertical component was negated twice, and firing while the two submarines were
@@ -375,7 +375,7 @@ on the same vertical line divided by zero and killed the game.
 **Collisions.** `get_bounding_box` returned the centre of the hull while
 `has_collided` expects the bottom left corner, so every box test in the game was
 off by half a submarine. The hit radii were also three to ten times the size of
-the thing being drawn - a depth charge is 7 pixels across and killed you from
+the thing being drawn: a depth charge is 7 pixels across and killed you from
 70 away. Every radius now matches the art and lives beside the other tunables at
 the top of the file.
 
@@ -426,8 +426,8 @@ being compared and the action keys were not, so with caps lock on both players
 could swim and neither could shoot, pause or restart.
 
 **A third of each submarine could not be hit.** `get_bounding_box` was built
-from the hull and the keel only, so the conning tower and the periscope - 35 of
-the 100 units you can see - were outside every collision shape. The propeller
+from the hull and the keel only, so the conning tower and the periscope (35 of
+the 100 units you can see) were outside every collision shape. The propeller
 is still left out, deliberately: it is a thin spinning blade and clipping it
 should not cost a life.
 
@@ -440,8 +440,8 @@ each now.
 submarines, so it painted over them; and its box covered the whole band the
 seabed clamp puts a hull in, so a player parked on the sand inside it could not
 be reached by a torpedo or a depth charge. The box is now the drawn hull only,
-the wreck has its own slot in the draw order - behind the submarines, in front
-of the weeds - and it is solid ground rather than a room.
+the wreck has its own slot in the draw order, behind the submarines, in front
+of the weeds, and it is solid ground rather than a room.
 
 **Pausing banked up the game.** Reload and spawn deadlines are wall clock
 stamps, and the wall clock does not stop when the game does. A thirty second
@@ -457,7 +457,7 @@ rapid fire six, so a fresh shield overflowed its bar and rapid fire started
 already a seventh spent. The three durations are named constants the HUD reads.
 
 **A hull went down flat**, translated straight to the seabed like something
-being lowered on a rope. It turns as it falls now - a plain 2D rotation of
+being lowered on a rope. It turns as it falls now: a plain 2D rotation of
 every point about the average of the four hull corners, which is the one point
 a rotation leaves where it is. About thirty degrees over the whole way down.
 Nothing else in the game rotates: every hit box is axis aligned, and a tilted
@@ -517,23 +517,23 @@ path itself, so the bundled `OpenGL` copy is found.
 
 **177 checks, all passing.** They cover:
 
-- the graphics algorithms themselves - the midpoint line joins both ends with
+- the graphics algorithms themselves: the midpoint line joins both ends with
   no gaps in all eight zones, every midpoint circle point sits on the radius and
   the circle is symmetric, the scanline fill stays inside its polygon,
-  Cohen-Sutherland keeps, rejects and cuts lines correctly - and that only
+  Cohen-Sutherland keeps, rejects and cuts lines correctly, and that only
   `glBegin(GL_POINTS)` and `glVertex2f` are used to draw;
-- collisions and borders - the exact hit shape, swept torpedoes, the walls, the
+- collisions and borders: the exact hit shape, swept torpedoes, the walls, the
   surface, the wreck's deck and side, bumping, a maximised window;
-- the intro - it ends by itself, any key or click skips it without doing
+- the intro: it ends by itself, any key or click skips it without doing
   anything else, the lettering sits inside the title panel;
-- the game - rounds, matches, pause, help, pickups, both torpedoes, homing,
+- the game: rounds, matches, pause, help, pickups, both torpedoes, homing,
   decoys, blast, dash, the READY count, what each level has, the computer's
   fairness, the record file;
 - one check per bug fixed, so none of them can come back quietly.
 
 Beyond the checks, the game has been driven by a random input tester for
-21,000 frames - random keys in every state, random mouse clicks, random window
-sizes, forced hits so rounds and matches end - checking every frame that
+21,000 frames: random keys in every state, random mouse clicks, random window
+sizes, forced hits so rounds and matches end, checking every frame that
 nothing throws, no submarine leaves the water or ends up inside the wreck,
 lives stay in range, no number goes NaN, and no list grows without limit.
 Nothing was found.

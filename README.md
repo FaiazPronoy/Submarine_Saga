@@ -14,7 +14,7 @@
 ![Course](https://img.shields.io/badge/CSE423-Computer%20Graphics-F28C28?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-C0392B?style=for-the-badge)
 
-🎓 *CSE423 Computer Graphics Project - BRAC University*
+🎓 *CSE423 Computer Graphics Project, BRAC University*
 👨‍💻 *By **Faiaz Abrar Zaman Pronoy** & **Sinthia Khandoker***
 
 <br>
@@ -34,7 +34,7 @@ https://github.com/user-attachments/assets/a4dba5c5-9015-4feb-988a-f61c02cfbee7
 *A quick 47-second look at the game* ⏱️
 
 🎥 **Want to see everything?** Watch the
-**[full 2-minute tour](https://github.com/FaiazPronoy/Submarine_Saga/releases/download/v2.0/SubmarineSaga-full-showcase.mp4)** -
+**[full 2-minute tour](https://github.com/FaiazPronoy/Submarine_Saga/releases/download/v2.0/SubmarineSaga-full-showcase.mp4)**:
 every mode, every level and every feature.
 
 </div>
@@ -61,7 +61,7 @@ dodging depth charges, mines and a hungry shark. 🦈
 Play against the **computer** 🤖 or a **friend** 👥 on the same keyboard.
 
 ✨ The special part: **every shape on screen is drawn point by point** using classic computer
-graphics algorithms we wrote ourselves - no images, no ready-made shapes, no game engine.
+graphics algorithms we wrote ourselves: no images, no ready-made shapes, no game engine.
 
 ---
 
@@ -100,7 +100,7 @@ graphics algorithms we wrote ourselves - no images, no ready-made shapes, no gam
 - 🏁 **Win 2 rounds** to win the match
 - ⚠️ **Red warning** a second before a torpedo hits
 - 🔥 **Last Stand**: at 2 lives you get faster
-- ☠️ **Sudden Death** after 1 minute - the sea gets angry!
+- ☠️ **Sudden Death** after 1 minute: the sea gets angry!
 
 ### 🎨 Look & Feel
 - 📡 Animated **sonar intro**
@@ -150,8 +150,8 @@ graphics algorithms we wrote ourselves - no images, no ready-made shapes, no gam
 ## 🕹️ How to Play
 
 1. 🏠 Choose **1 Player** or **2 Players**, then pick a level
-2. 🧭 Move with your keys - your torpedo tube turns with you
-3. ✋ Let go - the tube **stays** at that angle
+2. 🧭 Move with your keys: your torpedo tube turns with you
+3. ✋ Let go: the tube **stays** at that angle
 4. 🔴 When the dotted sight turns **red**, fire! 🚀
 5. 🏃 Keep moving and watch for the ⚠️ red warning
 6. 🏆 Sink the enemy twice to **win the match**
@@ -182,11 +182,11 @@ graphics algorithms we wrote ourselves - no images, no ready-made shapes, no gam
 
 ## 🧠 Computer Graphics Used
 
-> 🎨 Every shape is drawn with `GL_POINTS` only - built from these algorithms, written from scratch.
+> 🎨 Every shape is drawn with `GL_POINTS` only, built from these algorithms, written from scratch.
 
 | 🧩 Topic | 🎯 Used For |
 |---|---|
-| 📏 **Midpoint Line** *(8-zone)* | Every line - outlines, arrows, sight, buttons |
+| 📏 **Midpoint Line** *(8-zone)* | Every line: outlines, arrows, sight, buttons |
 | ⭕ **Midpoint Circle** *(8-way symmetry)* | Portholes, bubbles, mines, rings, the sun |
 | 🖌️ **Scanline Polygon Fill** | Submarines, fish, shark, boat, title letters |
 | ✂️ **Cohen-Sutherland Clipping** | Cutting the aim line to the water |
@@ -197,7 +197,7 @@ graphics algorithms we wrote ourselves - no images, no ready-made shapes, no gam
 | 🌈 **Color Interpolation** | Sky & sea gradients, fading effects |
 | 🖥️ **Viewport Mapping** | Right shape at any window size |
 | ⚡ **Display Lists & Double Buffering** | Smooth ~75 FPS |
-| 💥 **Collision Detection** | Exact hit shapes - nothing passes through |
+| 💥 **Collision Detection** | Exact hit shapes: nothing passes through |
 
 ---
 
@@ -210,20 +210,20 @@ graphics algorithms we wrote ourselves - no images, no ready-made shapes, no gam
 | 🪟 | **GLUT (freeglut)** | Window, keyboard and mouse |
 | 📦 | **PyInstaller** | Building the Windows `.exe` |
 
-> 🚫 No images · 🚫 No sound files · 🚫 No game engine - **everything is made in code** ✨
+> 🚫 No images · 🚫 No sound files · 🚫 No game engine: **everything is made in code** ✨
 
 ---
 
 ## 🚀 Getting Started
 
-### 🪟 Option 1 - Just Play (no Python needed)
+### 🪟 Option 1: Just Play (no Python needed)
 1. ⬇️ Download the zip from **[Releases](https://github.com/FaiazPronoy/Submarine_Saga/releases/latest)**
 2. 📂 Unzip it
 3. ▶️ Run `SubmarineSaga.exe`
 
-> ⚠️ Windows may show a SmartScreen warning the first time - click **More info → Run anyway**.
+> ⚠️ Windows may show a SmartScreen warning the first time, click **More info → Run anyway**.
 
-### 🐍 Option 2 - Run from Source
+### 🐍 Option 2: Run from Source
 1. Install **Python 3**
 2. Clone or download this repository
 3. Double-click **`Play Submarine Saga.bat`**, or run:
@@ -232,7 +232,7 @@ graphics algorithms we wrote ourselves - no images, no ready-made shapes, no gam
 python "Submarine Saga (CSE423 Project).py"
 ```
 
-> ✅ No extra installs - PyOpenGL is already inside the project.
+> ✅ No extra installs: PyOpenGL is already inside the project.
 
 ### 📦 Build the `.exe` Yourself
 ```bash
@@ -261,7 +261,7 @@ Submarine_Saga/
 └── 🟦 OpenGL/                              # PyOpenGL library (third party)
 ```
 
-📘 Want the full story - how it works and every bug we fixed? Read the
+📘 Want the full story of how it works and every bug we fixed? Read the
 **[Development Notes](docs/DEVELOPMENT.md)**.
 
 ---
@@ -284,7 +284,7 @@ Submarine_Saga/
 **© 2024-2026 Faiaz Abrar Zaman Pronoy & Sinthia Khandoker. All rights reserved.**
 
 - ✅ You **can** read the code and play the game for personal use
-- ❌ You **cannot** copy, change, share, sell, or submit any part of it as your own work - without written permission
+- ❌ You **cannot** copy, change, share, sell, or submit any part of it as your own work, without written permission
 
 📄 See [LICENSE](LICENSE) for full terms. The bundled `OpenGL/` folder (PyOpenGL & freeglut) is third-party software under its own licenses.
 
